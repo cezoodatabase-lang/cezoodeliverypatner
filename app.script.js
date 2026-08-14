@@ -1,5 +1,207 @@
 (function(){
 
+/*
+ * ============================================================
+ * CEZOO ANDROID FCM DEVICE TOKEN RECEIVER
+ *
+ * Android sends the real Firebase token using:
+ *   window.onAndroidFcmToken(token)
+ * and also dispatches:
+ *   cezooFcmToken
+ *
+ * The token is kept locally first. If the delivery partner has
+ * already logged in, it is immediately upserted into Supabase.
+ * One row per mobile means a new/re-created token REPLACES the
+ * old token for that same mobile number.
+ * ============================================================
+ */
+
+const CEZOO_DEVICE_TOKEN_SUPABASE_URL =
+    "https://ycqwdeiykbkfmmlpgdzd.supabase.co";
+
+const CEZOO_DEVICE_TOKEN_SUPABASE_KEY =
+    "sb_publishable_-4RzQVudUy_VsvSpHTxNfg_hrdsQW0j";
+
+const cezooDeviceTokenSB =
+    window.supabase.createClient(
+        CEZOO_DEVICE_TOKEN_SUPABASE_URL,
+        CEZOO_DEVICE_TOKEN_SUPABASE_KEY
+    );
+
+let cezooDeviceTokenSaveBusy = false;
+let cezooLastSavedTokenKey = "";
+
+function cleanPartnerMobile(value){
+    return String(value || "")
+        .replace(/\D/g,"")
+        .trim();
+}
+
+function getCezooAndroidDeviceToken(){
+
+    return String(
+        window.CEZOO_FCM_TOKEN ||
+        localStorage.getItem("cezoo_fcm_token") ||
+        ""
+    ).trim();
+}
+
+async function saveCezooDeviceTokenForMobile(mobile){
+
+    const cleanMobile =
+        cleanPartnerMobile(mobile);
+
+    const token =
+        getCezooAndroidDeviceToken();
+
+    /*
+     * Login may complete before Android delivers the token.
+     * That is okay: onAndroidFcmToken() below will save it later.
+     */
+    if(!cleanMobile || !token){
+        return {
+            saved:false,
+            waitingForToken:!token
+        };
+    }
+
+    const saveKey =
+        cleanMobile + "::" + token;
+
+    if(
+        cezooDeviceTokenSaveBusy ||
+        cezooLastSavedTokenKey === saveKey
+    ){
+        return {
+            saved:
+                cezooLastSavedTokenKey === saveKey
+        };
+    }
+
+    cezooDeviceTokenSaveBusy = true;
+
+    try{
+
+        const { error } =
+            await cezooDeviceTokenSB
+                .from("delivery_partner_device_tokens")
+                .upsert(
+                    {
+                        mobile: cleanMobile,
+                        device_token: token,
+                        updated_at:
+                            new Date().toISOString()
+                    },
+                    {
+                        onConflict:"mobile"
+                    }
+                );
+
+        if(error){
+            throw error;
+        }
+
+        cezooLastSavedTokenKey =
+            saveKey;
+
+        console.log(
+            "✅ CEZOO device token saved/replaced for:",
+            cleanMobile
+        );
+
+        return {
+            saved:true
+        };
+
+    }catch(error){
+
+        console.error(
+            "❌ CEZOO device token save failed:",
+            error
+        );
+
+        return {
+            saved:false,
+            error:error
+        };
+
+    }finally{
+
+        cezooDeviceTokenSaveBusy = false;
+    }
+}
+
+async function receiveCezooAndroidFcmToken(token){
+
+    const cleanToken =
+        String(token || "").trim();
+
+    if(!cleanToken){
+        return;
+    }
+
+    /*
+     * Keep the exact latest Android token.
+     */
+    window.CEZOO_FCM_TOKEN =
+        cleanToken;
+
+    localStorage.setItem(
+        "cezoo_fcm_token",
+        cleanToken
+    );
+
+    console.log(
+        "✅ Real Android FCM token received by website:",
+        cleanToken
+    );
+
+    /*
+     * If this user is already logged in, save/replace immediately.
+     */
+    const mobile =
+        cleanPartnerMobile(
+            localStorage.getItem(
+                "partner_mobile"
+            )
+        );
+
+    if(mobile){
+        await saveCezooDeviceTokenForMobile(
+            mobile
+        );
+    }
+}
+
+/*
+ * Direct callback used by MainActivity.kt.
+ */
+window.onAndroidFcmToken =
+    receiveCezooAndroidFcmToken;
+
+/*
+ * Event fallback used by MainActivity.kt.
+ */
+window.addEventListener(
+    "cezooFcmToken",
+    function(event){
+
+        const token =
+            event?.detail?.token;
+
+        receiveCezooAndroidFcmToken(
+            token
+        );
+    }
+);
+
+window.getCezooAndroidDeviceToken =
+    getCezooAndroidDeviceToken;
+
+window.saveCezooDeviceTokenForMobile =
+    saveCezooDeviceTokenForMobile;
+
+
 const map = {
     login: "loginPage",
     document: "documentPage",

@@ -219,6 +219,40 @@ async function verifyOTP(){
             mobile
         );
 
+        /*
+         * =====================================================
+         * SAVE REAL ANDROID FCM TOKEN TO SUPABASE
+         *
+         * If the token already arrived from MainActivity.kt,
+         * save it now. If it has not arrived yet, app.script.js
+         * will save it automatically as soon as Android sends it.
+         *
+         * Upsert is keyed by mobile, so a new token replaces the
+         * previous token for this delivery partner.
+         * =====================================================
+         */
+        try{
+
+            if(
+                typeof window.saveCezooDeviceTokenForMobile ===
+                "function"
+            ){
+                await window.saveCezooDeviceTokenForMobile(
+                    mobile
+                );
+            }
+
+        }catch(tokenError){
+
+            /*
+             * Token storage must never block a valid login.
+             */
+            console.warn(
+                "Device token save warning:",
+                tokenError
+            );
+        }
+
         clearOTP();
 
         /*

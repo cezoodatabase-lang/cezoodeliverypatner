@@ -119,29 +119,52 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 
 #loginPage .otp-container{
     display:flex;
-    justify-content:space-between;
-    gap:8px;
+    justify-content:center;
+    gap:9px;
+    width:100%;
     margin-bottom:15px;
 }
 
+/* Clean 6-box OTP UI */
 #loginPage .otp-box{
-    width:50px;
-    height:55px;
-    border:1px solid #ddd;
-    border-radius:12px;
+    flex:1;
+    min-width:0;
+    max-width:52px;
+    height:58px;
+    border:1.5px solid #dfe3e8;
+    border-radius:14px;
+    outline:none;
+    background:#f8faf9;
+    color:#111827;
     text-align:center;
     font-size:22px;
-    font-weight:600;
-    outline:none;
-    background:#fff;
+    font-weight:800;
+    caret-color:#0C831F;
+    transition:border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .15s ease;
 }
-
 #loginPage .otp-box:focus{
     border-color:#0C831F;
+    background:#fff;
+    box-shadow:0 0 0 4px rgba(12,131,31,.09);
+    transform:translateY(-1px);
 }
-
+#loginPage .otp-box.filled{
+    border-color:#9fd5a8;
+    background:#f4fff6;
+}
+#loginPage .otp-helper{
+    margin:-2px 0 15px;
+    text-align:center;
+    color:#8a8a8a;
+    font-size:12px;
+    line-height:1.45;
+}
 #loginPage .otp-container.shake{
     animation:shake .4s;
+}
+@media (max-width:360px){
+    #loginPage .otp-container{gap:6px;}
+    #loginPage .otp-box{height:54px;font-size:20px;border-radius:12px;}
 }
 #loginPage .terms-text{
     margin-top:14px;
@@ -169,6 +192,275 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
     color:#111;
     margin-bottom:18px;
 }
+
+/* ===== Login Privacy / Terms full-page sheet ===== */
+#loginLegalOverlay{
+    position:fixed;
+    inset:0;
+    z-index:30000;
+    display:none;
+    flex-direction:column;
+    width:100%;
+    height:100dvh;
+    background:#fff;
+}
+#loginLegalOverlay.open{display:flex;}
+#loginLegalOverlay .loginLegalHeader{
+    flex-shrink:0;
+    min-height:107px;
+    padding:calc(35px + env(safe-area-inset-top,0px)) 16px 0;
+    display:grid;
+    grid-template-columns:42px 1fr 42px;
+    align-items:center;
+    border-bottom:1px solid #ececec;
+    background:#fff;
+}
+#loginLegalOverlay .loginLegalBack{
+    width:40px;
+    height:40px;
+    border:0;
+    border-radius:12px;
+    background:#f4f5f6;
+    color:#111827;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+    cursor:pointer;
+}
+#loginLegalOverlay .loginLegalTitle{
+    text-align:center;
+    color:#111827;
+    font-size:18px;
+    font-weight:800;
+}
+#loginLegalOverlay .loginLegalBody{
+    flex:1;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:18px 16px calc(28px + env(safe-area-inset-bottom,0px));
+    background:#f7f8fa;
+}
+#loginLegalOverlay .loginLegalBody > *{max-width:720px;margin-left:auto;margin-right:auto;}
+#loginLegalOverlay .loginLegalFallback{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:18px;
+    color:#4b5563;
+    font-size:14px;
+    line-height:1.7;
+}
+
+
+/* Login legal content styling - applies to BOTH Privacy and Terms clones */
+#loginLegalOverlay .policyContent,
+#loginLegalOverlay .partnerPrivacyBody{
+    width:100%;
+    max-width:720px;
+    margin:0 auto;
+}
+
+#loginLegalOverlay .policyList{
+    margin:0;
+    padding:0;
+    list-style:none;
+    counter-reset:legalItem;
+}
+
+#loginLegalOverlay .policyList li{
+    counter-increment:legalItem;
+    position:relative;
+    margin:0 0 12px;
+    padding:16px 16px 16px 48px;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    background:#fff;
+    color:#374151;
+    font-size:13px;
+    line-height:1.65;
+    box-shadow:0 2px 8px rgba(17,24,39,.025);
+}
+
+#loginLegalOverlay .policyList li::before{
+    content:counter(legalItem);
+    position:absolute;
+    left:14px;
+    top:15px;
+    width:24px;
+    height:24px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#ecfdf3;
+    color:#15803d;
+    font-size:11px;
+    font-weight:800;
+}
+
+#loginLegalOverlay .partnerPolicyRule{
+    margin:0 0 12px;
+    padding:16px;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 2px 8px rgba(17,24,39,.025);
+}
+
+#loginLegalOverlay .partnerPolicyText h4{
+    margin:0 0 7px;
+    color:#111827;
+    font-size:14px;
+    font-weight:800;
+    line-height:1.35;
+}
+
+#loginLegalOverlay .partnerPolicyText p{
+    margin:0;
+    color:#6b7280;
+    font-size:13px;
+    line-height:1.65;
+}
+
+#loginLegalOverlay .partnerPrivacyCompany{
+    margin-top:16px;
+    padding:16px;
+    border-radius:16px;
+    background:#ecfdf3;
+    color:#4b5563;
+    font-size:12px;
+    line-height:1.6;
+    text-align:center;
+}
+
+#loginLegalOverlay .partnerPrivacyCompany strong{
+    display:block;
+    margin-bottom:4px;
+    color:#15803d;
+    font-size:13px;
+    font-weight:800;
+}
+
+
+/* ===== Important Terms Rules / Check List ===== */
+#loginLegalOverlay .termsRulesCard,
+#orderPage .termsRulesCard{
+    margin:0 0 16px;
+    padding:16px;
+    border:1px solid #dbe7de;
+    border-radius:18px;
+    background:#f8fff9;
+}
+
+#loginLegalOverlay .termsRulesTitle,
+#orderPage .termsRulesTitle{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin:0 0 5px;
+    color:#111827;
+    font-size:15px;
+    font-weight:800;
+}
+
+#loginLegalOverlay .termsRulesTitle i,
+#orderPage .termsRulesTitle i{
+    color:#16a34a;
+}
+
+#loginLegalOverlay .termsRulesSub,
+#orderPage .termsRulesSub{
+    margin:0 0 13px;
+    color:#6b7280;
+    font-size:12px;
+    line-height:1.55;
+}
+
+#loginLegalOverlay .termsRuleList,
+#orderPage .termsRuleList{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+
+#loginLegalOverlay .termsRuleItem,
+#orderPage .termsRuleItem{
+    display:grid;
+    grid-template-columns:28px minmax(0,1fr);
+    gap:10px;
+    align-items:flex-start;
+    padding:12px;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    background:#fff;
+}
+
+#loginLegalOverlay .termsTick,
+#orderPage .termsTick{
+    width:24px;
+    height:24px;
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#dcfce7;
+    color:#15803d;
+    font-size:12px;
+    flex-shrink:0;
+}
+
+#loginLegalOverlay .termsRuleText strong,
+#orderPage .termsRuleText strong{
+    display:block;
+    margin-bottom:3px;
+    color:#111827;
+    font-size:13px;
+    font-weight:800;
+}
+
+#loginLegalOverlay .termsRuleText span,
+#orderPage .termsRuleText span{
+    display:block;
+    color:#6b7280;
+    font-size:12px;
+    line-height:1.55;
+}
+
+
+/* ===== Small logout beside registration Step ===== */
+#documentPage .step-progress-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+#documentPage .step-progress-text{
+    color:#16a34a;
+    font-weight:700;
+}
+#documentPage .step-logout-btn{
+    flex:0 0 auto;
+    width:28px;
+    height:28px;
+    padding:0;
+    margin:0;
+    border:1px solid #e5e7eb;
+    border-radius:9px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    color:#6b7280;
+    font-size:11px;
+    box-shadow:0 2px 7px rgba(17,24,39,.05);
+    cursor:pointer;
+}
+#documentPage .step-logout-btn:active{
+    transform:scale(.94);
+    background:#f3f4f6;
+}
+
 /* ===== document.html ===== */
 
 #documentPage *{
@@ -540,6 +832,149 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
     color:#666;
     line-height:1.5;
 }
+
+/* ===== Partner personal photo upload ===== */
+#documentPage .partner-photo-card{
+    padding:22px;
+    border:1px solid #d9efe0;
+    background:linear-gradient(180deg,#f7fff9 0%,#ffffff 100%);
+}
+#documentPage .partner-photo-icon{
+    width:52px;
+    height:52px;
+    margin:0 auto 12px;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#dcfce7;
+    color:#16a34a;
+    font-size:21px;
+}
+#documentPage .partner-photo-card h3{
+    margin-bottom:6px;
+    color:#111827;
+    font-size:20px;
+}
+#documentPage .partner-photo-card > p{
+    max-width:320px;
+    margin:0 auto 16px;
+    color:#6b7280;
+    font-size:13px;
+    line-height:1.55;
+}
+#documentPage .partner-photo-preview-wrap{
+    width:124px;
+    height:124px;
+    margin:0 auto 16px;
+    border:2px dashed #86d49a;
+    border-radius:50%;
+    overflow:hidden;
+    position:relative;
+    background:#f0fdf4;
+}
+#documentPage .partner-photo-preview-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:none;
+}
+#documentPage .partner-photo-placeholder{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    color:#15803d;
+}
+#documentPage .partner-photo-placeholder i{font-size:26px;}
+#documentPage .partner-photo-placeholder span{font-size:10px;font-weight:700;}
+#documentPage .partner-photo-btn{
+    gap:9px;
+    border-radius:14px;
+    box-shadow:0 8px 20px rgba(22,163,74,.16);
+}
+#documentPage .partner-photo-help{
+    margin-top:11px;
+    color:#8a8f98;
+    font-size:11px;
+    line-height:1.45;
+    text-align:center;
+}
+
+
+/* ===== Simple Take Your Picture card ===== */
+#documentPage .simple-photo-card{
+    width:100%;
+    min-height:150px;
+    padding:22px 18px;
+    border:1px solid #dce7df;
+    border-radius:20px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 5px 18px rgba(17,24,39,.05);
+}
+#documentPage .simple-photo-card .custom-file-upload{
+    width:100%;
+}
+#documentPage .take-picture-btn{
+    width:100%;
+    min-height:82px;
+    border-radius:18px;
+    gap:10px;
+    font-size:15px;
+    box-shadow:none;
+}
+#documentPage .take-picture-btn i{
+    font-size:18px;
+}
+#documentPage .simple-photo-card .selected-file-name{
+    margin-top:10px;
+    font-size:12px;
+}
+
+
+/* ===== Take Your Picture - simple neutral style ===== */
+#documentPage .take-picture-input{
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    opacity:0 !important;
+    overflow:hidden !important;
+    pointer-events:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+}
+
+#documentPage .take-picture-only{
+    width:100%;
+    min-height:58px;
+    margin:0;
+    padding:16px 18px;
+    border:1px solid #d9d9d9;
+    border-radius:14px;
+    background:#ffffff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#222222;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:none;
+    -webkit-tap-highlight-color:transparent;
+}
+
+#documentPage .take-picture-only:active{
+    transform:scale(.99);
+    background:#f5f5f5;
+}
+
 /* ===== verification.html ===== */
 
 #verificationPage *{
@@ -5533,23 +5968,24 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
             </button>
 <p class="terms-text">
     By continuing, you agree to our
-    <a href="privacy.html">Privacy Policy</a>
+    <a href="#" onclick="openLoginLegal('privacy'); return false;">Privacy Policy</a>
     &amp;
-    <a href="terms.html">Terms &amp; Conditions</a>.
+    <a href="#" onclick="openLoginLegal('terms'); return false;">Terms &amp; Conditions</a>.
 </p>
 </div>
 <div id="otpScreen" style="display:none; width:100%;">
 <div class="otp-title">
         Enter your OTP
     </div>
-<div class="otp-container">
-<input autocomplete="new-password" class="otp-box" id="otp1" inputmode="numeric" maxlength="1" name="otp_one_cezoo" type="text"/>
-<input autocomplete="new-password" class="otp-box" id="otp2" inputmode="numeric" maxlength="1" name="otp_two_cezoo" type="text"/>
-<input autocomplete="new-password" class="otp-box" id="otp3" inputmode="numeric" maxlength="1" name="otp_three_cezoo" type="text"/>
-<input autocomplete="new-password" class="otp-box" id="otp4" inputmode="numeric" maxlength="1" name="otp_four_cezoo" type="text"/>
-<input autocomplete="new-password" class="otp-box" id="otp5" inputmode="numeric" maxlength="1" name="otp_five_cezoo" type="text"/>
-<input autocomplete="new-password" class="otp-box" id="otp6" inputmode="numeric" maxlength="1" name="otp_six_cezoo" type="text"/>
+<div class="otp-container" id="otpContainer">
+<input autocomplete="one-time-code" class="otp-box" id="otp1" inputmode="numeric" maxlength="1" name="otp_one_cezoo" type="tel" aria-label="OTP digit 1"/>
+<input autocomplete="off" class="otp-box" id="otp2" inputmode="numeric" maxlength="1" name="otp_two_cezoo" type="tel" aria-label="OTP digit 2"/>
+<input autocomplete="off" class="otp-box" id="otp3" inputmode="numeric" maxlength="1" name="otp_three_cezoo" type="tel" aria-label="OTP digit 3"/>
+<input autocomplete="off" class="otp-box" id="otp4" inputmode="numeric" maxlength="1" name="otp_four_cezoo" type="tel" aria-label="OTP digit 4"/>
+<input autocomplete="off" class="otp-box" id="otp5" inputmode="numeric" maxlength="1" name="otp_five_cezoo" type="tel" aria-label="OTP digit 5"/>
+<input autocomplete="off" class="otp-box" id="otp6" inputmode="numeric" maxlength="1" name="otp_six_cezoo" type="tel" aria-label="OTP digit 6"/>
 </div>
+<p class="otp-helper">Enter the 6-digit code sent to your mobile number</p>
 <button class="otp-btn" onclick="verifyOTP()">
                 Verify OTP
             </button>
@@ -5557,6 +5993,18 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 </div>
 </div>
 </section>
+
+<div id="loginLegalOverlay" aria-hidden="true">
+    <header class="loginLegalHeader">
+        <button class="loginLegalBack" type="button" onclick="closeLoginLegal()" aria-label="Back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="loginLegalTitle" id="loginLegalTitle">Privacy Policy</div>
+        <span></span>
+    </header>
+    <main class="loginLegalBody" id="loginLegalBody"></main>
+</div>
+
 <section id="documentPage" class="spa-page">
 <div class="container">
 <!-- REPLACE IMAGE -->
@@ -5568,9 +6016,17 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 <h2></h2>
 <p>Become a Delivery Partner</p>
 </div>
-<div class="progress">
-            Step <span id="stepNo">1</span> of 8
-        </div>
+<div class="progress step-progress-row">
+    <span class="step-progress-text">Step <span id="stepNo">1</span> of 8
+        </span>
+    <button type="button"
+            class="step-logout-btn"
+            onclick="logoutFromRegistration()"
+            aria-label="Logout"
+            title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+    </button>
+</div>
 <!-- STEP 1 -->
 <div class="step active">
 <label>Full Name</label>
@@ -5595,7 +6051,7 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 <option>Other</option>
 </select>
 <div class="step-note">
-        Please keep your Vehicle RC, Driving Licence, Bike Insurance,
+        Please keep your Vehicle RC, Driving Licence, a clear personal photo,
         Aadhaar Card and PAN Card ready before proceeding.
     </div>
 </div>
@@ -5649,21 +6105,17 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 </div>
 <!-- STEP 5 -->
 <div class="step">
-<div class="upload-card">
-<h3>Bike Insurance Upload</h3>
-<p>Upload Insurance Copy</p>
-<div class="custom-file-upload">
-<input accept="image/jpeg,image/png,image/webp,application/pdf" id="insurance" onchange="showSelectedFile(this)" type="file"/>
-<label class="choose-file-btn" for="insurance">
-                Choose File
-            </label>
-<div class="selected-file-name">
-                No file selected
-            </div>
+<label class="take-picture-only" for="insurance"><span>Take Your Picture</span></label>
+
+<input
+    type="file"
+    id="insurance"
+    capture="user"
+    class="take-picture-input"
+    onchange="showSelectedFile(this)"
+>
 </div>
-</div>
-</div>
-<!-- STEP 6 -->
+
 <div class="step">
 <div class="upload-card">
 <h3>Aadhaar Card Upload</h3>
@@ -5942,6 +6394,75 @@ html,body{margin:0;padding:0;width:100%;min-height:100%;}
 <span class="policyHeaderSpace"></span>
 </div>
 <div class="policyContent">
+
+<div class="termsRulesCard">
+    <div class="termsRulesTitle">
+        <i class="fa-solid fa-circle-check"></i>
+        Important Partner Rules
+    </div>
+    <p class="termsRulesSub">
+        Please follow these rules while using the CEZOO Delivery Partner application.
+    </p>
+
+    <div class="termsRuleList">
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Minimum withdrawal ₹500</strong>
+                <span>A withdrawal request can be made only when your available eligible earnings balance is ₹500 or more.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Only completed deliveries earn payout</strong>
+                <span>Only successfully completed and verified deliveries are considered for delivery earnings and withdrawal.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Maintain delivery quality</strong>
+                <span>Products must be handled carefully and delivered in proper condition without avoidable damage, tampering or loss.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Accept orders responsibly</strong>
+                <span>Accept an order only when you are available and able to complete the pickup and delivery safely within a reasonable time.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Correct order &amp; customer</strong>
+                <span>Verify the order details and deliver to the correct customer/location shown in the application.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Delivery proof must be genuine</strong>
+                <span>Where proof is requested, upload only a genuine photo or confirmation related to that completed delivery.</span>
+            </div>
+        </div>
+
+        <div class="termsRuleItem">
+            <span class="termsTick"><i class="fa-solid fa-check"></i></span>
+            <div class="termsRuleText">
+                <strong>Withdrawal is subject to verification</strong>
+                <span>Pending, disputed, cancelled, fraudulent or unverified delivery earnings may be excluded from the withdrawable balance.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <ol class="policyList">
 <li>
             By using the CEZOO Delivery Partner application, you agree to follow all company policies and these Terms &amp; Conditions.
@@ -10279,6 +10800,156 @@ window.openCancelledOrders =
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <!-- app.script.js receives the real Android FCM token before login.script.js uses it -->
+<script id="loginUiEnhancements">
+(function(){
+    function getOtpBoxes(){
+        return Array.from(document.querySelectorAll('#loginPage .otp-box'));
+    }
+
+    function setFilledState(box){
+        if(!box) return;
+        box.classList.toggle('filled', !!box.value);
+    }
+
+    document.addEventListener('input',function(e){
+        if(!e.target || !e.target.classList.contains('otp-box')) return;
+        var boxes=getOtpBoxes();
+        var box=e.target;
+        var index=boxes.indexOf(box);
+        var digits=(box.value||'').replace(/\D/g,'');
+
+        if(digits.length>1){
+            digits.slice(0,6-index).split('').forEach(function(digit,offset){
+                if(boxes[index+offset]){
+                    boxes[index+offset].value=digit;
+                    setFilledState(boxes[index+offset]);
+                }
+            });
+            var nextIndex=Math.min(index+digits.length,boxes.length-1);
+            if(boxes[nextIndex]) boxes[nextIndex].focus();
+            return;
+        }
+
+        box.value=digits.slice(-1);
+        setFilledState(box);
+        if(box.value && index<boxes.length-1) boxes[index+1].focus();
+    });
+
+    document.addEventListener('keydown',function(e){
+        if(!e.target || !e.target.classList.contains('otp-box')) return;
+        var boxes=getOtpBoxes();
+        var index=boxes.indexOf(e.target);
+        if(e.key==='Backspace' && !e.target.value && index>0){
+            boxes[index-1].value='';
+            setFilledState(boxes[index-1]);
+            boxes[index-1].focus();
+        }
+        if(e.key==='ArrowLeft' && index>0) boxes[index-1].focus();
+        if(e.key==='ArrowRight' && index<boxes.length-1) boxes[index+1].focus();
+    });
+
+    document.addEventListener('paste',function(e){
+        if(!e.target || !e.target.classList.contains('otp-box')) return;
+        var text=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+        if(!text) return;
+        e.preventDefault();
+        var boxes=getOtpBoxes();
+        text.split('').forEach(function(digit,i){
+            if(boxes[i]){
+                boxes[i].value=digit;
+                setFilledState(boxes[i]);
+            }
+        });
+        if(boxes[Math.min(text.length,6)-1]) boxes[Math.min(text.length,6)-1].focus();
+    });
+
+    window.openLoginLegal=function(type){
+        var overlay=document.getElementById('loginLegalOverlay');
+        var title=document.getElementById('loginLegalTitle');
+        var body=document.getElementById('loginLegalBody');
+        if(!overlay||!title||!body) return;
+
+        var isPrivacy=type==='privacy';
+        title.textContent=isPrivacy?'Privacy Policy':'Terms & Conditions';
+        var source=null;
+        if(isPrivacy){
+            var privacy=document.getElementById('partnerPrivacyOverlay');
+            source=privacy && privacy.querySelector('.partnerPrivacyBody');
+        }else{
+            var terms=document.getElementById('termsPage');
+            source=terms && terms.querySelector('.policyContent');
+        }
+
+        if(source){
+            body.innerHTML=source.innerHTML;
+        }else{
+            body.innerHTML='<div class="loginLegalFallback">'+
+                (isPrivacy
+                    ? '<h2>Privacy Policy</h2><p>Your privacy matters to us. This page explains how delivery partner information is collected, used and protected.</p>'
+                    : '<h2>Terms & Conditions</h2><p>Please read these terms carefully before continuing as a CEZOO delivery partner.</p>')+
+                '</div>';
+        }
+
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden','false');
+        document.body.style.overflow='hidden';
+        body.scrollTop=0;
+        history.pushState({loginLegal:true},'',location.href);
+    };
+
+    window.closeLoginLegal=function(fromPop){
+        var overlay=document.getElementById('loginLegalOverlay');
+        if(!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden','true');
+        document.body.style.overflow='';
+        if(!fromPop && history.state && history.state.loginLegal) history.back();
+    };
+
+    window.addEventListener('popstate',function(){
+        var overlay=document.getElementById('loginLegalOverlay');
+        if(overlay && overlay.classList.contains('open')) closeLoginLegal(true);
+    });
+
+
+    /* Swipe back from either direction on Privacy / Terms */
+    (function(){
+        var overlay=document.getElementById('loginLegalOverlay');
+        if(!overlay) return;
+
+        var startX=0;
+        var startY=0;
+        var tracking=false;
+
+        overlay.addEventListener('touchstart',function(e){
+            if(!overlay.classList.contains('open') || !e.touches || e.touches.length!==1) return;
+            startX=e.touches[0].clientX;
+            startY=e.touches[0].clientY;
+            tracking=true;
+        },{passive:true});
+
+        overlay.addEventListener('touchend',function(e){
+            if(!tracking || !e.changedTouches || !e.changedTouches.length) return;
+            tracking=false;
+
+            var endX=e.changedTouches[0].clientX;
+            var endY=e.changedTouches[0].clientY;
+            var dx=endX-startX;
+            var dy=endY-startY;
+
+            /* Close on a clear horizontal swipe in EITHER direction. */
+            if(Math.abs(dx)>=80 && Math.abs(dx)>Math.abs(dy)*1.35){
+                closeLoginLegal();
+            }
+        },{passive:true});
+
+        overlay.addEventListener('touchcancel',function(){
+            tracking=false;
+        },{passive:true});
+    })();
+
+})();
+</script>
 <script src="app.script.js"></script>
 <script src="login.script.js"></script>
 <script src="document.script.js"></script>
@@ -13486,5 +14157,48 @@ if(
 })();
 </script>
 
+<script>
+function logoutFromRegistration(){
+    try{
+        localStorage.removeItem("partner_mobile");
+        sessionStorage.removeItem("cezoo_just_submitted_application");
+    }catch(e){}
+
+    // Return directly to the starting mobile-number login screen.
+    if(typeof window.showPage === "function"){
+        window.showPage("login");
+    }else{
+        const pages = document.querySelectorAll(".spa-page");
+        pages.forEach(page => page.classList.remove("active"));
+        const loginPage = document.getElementById("loginPage");
+        if(loginPage) loginPage.classList.add("active");
+    }
+
+    // Reset login UI to mobile-number entry when available.
+    const mobileInput = document.getElementById("mobile");
+    if(mobileInput && mobileInput.closest("#loginPage")){
+        mobileInput.value = "";
+    }
+
+    const otpSection =
+        document.getElementById("otpSection") ||
+        document.querySelector("#loginPage .otp-section");
+
+    const mobileSection =
+        document.getElementById("mobileSection") ||
+        document.querySelector("#loginPage .mobile-section");
+
+    if(otpSection) otpSection.style.display = "none";
+    if(mobileSection) mobileSection.style.display = "";
+
+    setTimeout(()=>{
+        const input =
+            document.querySelector("#loginPage input[type='tel']") ||
+            document.querySelector("#loginPage input[inputmode='numeric']");
+        if(input) input.focus();
+    },120);
+}
+window.logoutFromRegistration = logoutFromRegistration;
+</script>
 </body>
 </html>

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEZOO Delivery Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+:root{
+    --bg:#f6f7f9;--card:#fff;--text:#15171a;--muted:#777d86;--line:#e8e9ec;
+    --green:#0c831f;--greenSoft:#eef9f0;--red:#d92d20;--redSoft:#fff1f0;
+    --amber:#b54708;--amberSoft:#fff7e8;--blue:#1d4ed8;--blueSoft:#eff6ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit}
+button{cursor:pointer}
+.appShell{min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:244px;background:#111315;color:#fff;padding:28px 16px 18px;display:flex;flex-direction:column;z-index:50}
+.brandWrap{padding:0 12px 26px}
+.brand{font-family:Bungee,sans-serif;font-size:27px;letter-spacing:.5px}
+.brandSub{font-size:11px;color:#8e949c;margin-top:1px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:6px}
+.navItem{width:100%;height:48px;border:0;border-radius:12px;padding:0 13px;background:transparent;color:#aeb3ba;display:flex;align-items:center;gap:12px;text-align:left;font-weight:650}
+.navItem i{width:20px;text-align:center}
+.navItem span{flex:1}
+.navItem.active,.navItem:hover{background:#24272b;color:#fff}
+.navBadge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#fff;color:#111;font-size:10px;display:flex;align-items:center;justify-content:center}
+.navBadge:empty{display:none}
+.sideFooter{margin-top:auto;padding:14px 12px 4px;display:flex;align-items:center;gap:8px;color:#8e949c;font-size:11px}
+.connectionDot{width:8px;height:8px;border-radius:50%;background:#f59e0b}
+.connectionDot.online{background:#22c55e}
+.connectionDot.error{background:#ef4444}
+.main{margin-left:244px;min-height:100vh}
+.topbar{height:86px;background:#fff;border-bottom:1px solid var(--line);padding:0 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:30}
+.topbar h1{margin:0;font-size:22px;font-weight:800}
+.topbar p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.topActions{margin-left:auto;display:flex;gap:8px}
+.iconBtn,.refreshBtn,.menuBtn{height:40px;border:1px solid var(--line);border-radius:11px;background:#fff;color:#333}
+.iconBtn,.menuBtn{width:40px}
+.refreshBtn{padding:0 14px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+.menuBtn{display:none}
+.content{padding:24px 28px 44px;max-width:1600px;margin:0 auto}
+.pageSection{display:none}.pageSection.active{display:block}
+.statGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.statCard{min-height:114px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;display:flex;align-items:flex-start;gap:12px}
+.statIcon{width:38px;height:38px;border-radius:11px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#555}
+.statCard span{display:block;color:var(--muted);font-size:10px;font-weight:650;margin-bottom:8px}
+.statCard strong{font-size:23px;font-weight:800;letter-spacing:-.6px}
+.twoCol{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+.panel.noPad{padding:0;overflow:hidden}
+.panelHeader{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}
+.panelHeader h2{margin:0;font-size:15px;font-weight:800}
+.panelHeader p{margin:4px 0 0;color:var(--muted);font-size:10px}
+.textBtn{border:0;background:transparent;color:#333;font-size:11px;font-weight:750;padding:6px}
+.compactList{display:flex;flex-direction:column}
+.compactRow{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid #f0f1f2}
+.compactRow:first-child{border-top:0}
+.avatar{width:38px;height:38px;border-radius:12px;background:#f1f3f5;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+.compactMain{min-width:0;flex:1}.compactMain strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.compactMain span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.money{font-weight:800;font-size:12px}
+.status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:9px;font-weight:800;text-transform:capitalize}
+.status.pending{background:var(--amberSoft);color:var(--amber)}
+.status.approved,.status.delivered{background:var(--greenSoft);color:var(--green)}
+.status.rejected,.status.cancelled{background:var(--redSoft);color:var(--red)}
+.status.accepted,.status.picked_up,.status.on_the_way,.status.assigned{background:var(--blueSoft);color:var(--blue)}
+.tableWrap{width:100%;overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{text-align:left;padding:11px 12px;color:#8a8f96;font-size:9px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);font-weight:750}
+td{padding:13px 12px;border-bottom:1px solid #f0f1f2;font-size:11px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+.nameCell strong{display:block;font-size:11px}.nameCell span{display:block;margin-top:3px;color:var(--muted);font-size:9px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.searchBox{height:43px;min-width:280px;max-width:430px;flex:1;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;padding:0 13px;gap:9px}
+.searchBox i{color:#a2a6ac;font-size:12px}.searchBox input{width:100%;border:0;outline:0;background:transparent;font-size:12px}
+.segmented{padding:4px;background:#eceef1;border-radius:11px;display:flex;gap:3px}
+.segmented button{border:0;background:transparent;color:#757a82;padding:8px 11px;border-radius:8px;font-size:10px;font-weight:700}
+.segmented button.active{background:#fff;color:#111;box-shadow:0 1px 5px rgba(0,0,0,.06)}
+.applicationGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.applicationCard,.partnerCard{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px}
+.applicationTop{display:flex;gap:11px;align-items:flex-start}
+.applicationInfo{flex:1;min-width:0}.applicationInfo h3{font-size:13px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.applicationInfo p{margin:5px 0 0;color:var(--muted);font-size:10px}
+.applicationMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.metaBox{background:#f8f9fa;border-radius:11px;padding:10px}.metaBox span{display:block;color:#999;font-size:8px;text-transform:uppercase;font-weight:700}.metaBox strong{display:block;font-size:10px;margin-top:5px;overflow-wrap:anywhere}
+.cardActions{display:flex;gap:7px;margin-top:14px}.cardActions button{height:37px;border-radius:10px;font-size:10px;font-weight:750}
+.viewBtn{flex:1;border:1px solid var(--line);background:#fff}
+.approveBtn{flex:1;border:0;background:#111;color:#fff}
+.rejectBtn{width:42px;border:1px solid #f0d4d2;background:#fff;color:var(--red)}
+.partnerGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.partnerCardTop{display:flex;align-items:center;gap:11px}.partnerCardTop .avatar{width:44px;height:44px;border-radius:14px}
+.partnerStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:15px}.partnerStat{background:#f8f9fa;border-radius:11px;padding:10px}.partnerStat span{display:block;font-size:8px;color:#999}.partnerStat strong{display:block;margin-top:5px;font-size:11px}
+.notificationList{display:flex;flex-direction:column}
+.notificationItem{display:flex;gap:12px;padding:13px 0;border-top:1px solid #f1f2f3}.notificationItem:first-child{border-top:0}
+.notificationIcon{width:36px;height:36px;border-radius:11px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notificationText{flex:1}.notificationText strong{display:block;font-size:11px}.notificationText p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.45}.notificationText time{display:block;color:#aaa;font-size:8px;margin-top:5px}
+.emptyState{padding:34px 12px;text-align:center;color:#999;font-size:11px}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px}.modal.open{display:flex}
+.modalBackdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.modalCard{position:relative;width:min(880px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 25px 80px rgba(0,0,0,.2)}
+.modalHeader{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px}
+.modalHeader h2{font-size:18px;margin:4px 0}.modalHeader p{margin:0;color:var(--muted);font-size:11px}.eyebrow{font-size:8px;color:#999;font-weight:800;letter-spacing:1px}
+.modalClose{width:38px;height:38px;border:0;border-radius:11px;background:#f3f4f6}
+.detailGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:17px}.detailBox{padding:12px;border-radius:12px;background:#f8f9fa}.detailBox span{font-size:8px;color:#999;text-transform:uppercase}.detailBox strong{display:block;margin-top:6px;font-size:11px;overflow-wrap:anywhere}
+.sectionTitle{font-size:12px;margin:20px 0 10px}
+.documentGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.documentBtn{min-height:64px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px;text-align:left;display:flex;align-items:center;gap:9px}.documentBtn i{width:30px;height:30px;border-radius:9px;background:#f3f4f6;display:flex;align-items:center;justify-content:center}.documentBtn div{min-width:0}.documentBtn strong{display:block;font-size:10px}.documentBtn span{display:block;font-size:8px;color:#999;margin-top:3px}
+.modalActions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.modalActions button{height:42px;padding:0 18px;border-radius:11px;font-size:11px;font-weight:750}
+.modalReject{border:1px solid #efd5d2;background:#fff;color:var(--red)}.modalApprove{border:0;background:#111;color:#fff}
+.toastStack{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{min-width:260px;max-width:360px;background:#17191c;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 12px 35px rgba(0,0,0,.2);font-size:10px;animation:toastIn .2s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:1250px){.statGrid{grid-template-columns:repeat(3,1fr)}.applicationGrid,.partnerGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){
+    .sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:none}.main{margin-left:0}.menuBtn{display:block}
+    .content{padding:18px 14px 36px}.topbar{padding:0 14px}.topbar p{display:none}
+    .statGrid{grid-template-columns:repeat(2,1fr)}.twoCol{grid-template-columns:1fr}.applicationGrid,.partnerGrid{grid-template-columns:1fr}
+    .toolbar{align-items:stretch;flex-direction:column}.searchBox{min-width:0;max-width:none}.segmented{overflow:auto}
+    .detailGrid{grid-template-columns:repeat(2,1fr)}.documentGrid{grid-template-columns:1fr}.refreshBtn span{display:none}
+}
+@media(max-width:430px){.statGrid{grid-template-columns:1fr 1fr}.statCard{min-height:100px;padding:13px}.statCard strong{font-size:20px}.modal{padding:10px}.modalCard{padding:16px}.detailGrid{grid-template-columns:1fr 1fr}}
+
+
+.performanceGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+}
+.performanceBox{
+    padding:14px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:#fafafa;
+}
+.performanceBox span{
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    font-weight:650;
+}
+.performanceBox strong{
+    display:block;
+    margin-top:7px;
+    font-size:18px;
+    font-weight:800;
+}
+.rankBadge{
+    width:28px;
+    height:28px;
+    border-radius:9px;
+    background:#f1f3f5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    font-weight:800;
+}
+.partnerStat.wide{
+    grid-column:span 3;
+}
+.partnerExtra{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #f0f1f2;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    color:var(--muted);
+    font-size:9px;
+}
+.partnerExtra strong{
+    color:var(--text);
+}
+@media(max-width:800px){
+    .performanceGrid{grid-template-columns:1fr 1fr}
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="appShell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brandWrap">
+            <div class="brand">CEZOO</div>
+            <div class="brandSub">Delivery Admin</div>
+        </div>
+
+        <nav class="nav">
+            <button class="navItem active" data-section="overview">
+                <i class="fa-solid fa-grid-2"></i><span>Overview</span>
+            </button>
+            <button class="navItem" data-section="applications">
+                <i class="fa-solid fa-user-check"></i><span>Applications</span>
+                <b class="navBadge" id="pendingNavBadge">0</b>
+            </button>
+            <button class="navItem" data-section="partners">
+                <i class="fa-solid fa-motorcycle"></i><span>Delivery Partners</span>
+            </button>
+            <button class="navItem" data-section="deliveries">
+                <i class="fa-solid fa-box"></i><span>Deliveries</span>
+            </button>
+            <button class="navItem" data-section="notifications">
+                <i class="fa-regular fa-bell"></i><span>Notifications</span>
+                <b class="navBadge" id="notificationNavBadge">0</b>
+            </button>
+        </nav>
+
+        <div class="sideFooter">
+            <div class="connectionDot" id="connectionDot"></div>
+            <span id="connectionText">Connecting…</span>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <button class="menuBtn" id="menuBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+            <div>
+                <h1 id="pageTitle">Overview</h1>
+                <p id="pageSubtitle">Live delivery operations dashboard</p>
+            </div>
+            <div class="topActions">
+                <button class="iconBtn" id="enableNotificationsBtn" title="Enable browser notifications">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <button class="refreshBtn" id="refreshBtn">
+                    <i class="fa-solid fa-rotate"></i><span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <section class="pageSection active" id="overviewSection">
+                <div class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-users"></i></div>
+                        <div><span>Total Applications</span><strong id="statApplications">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div><span>Pending Review</span><strong id="statPending">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-user-check"></i></div>
+                        <div><span>Approved Partners</span><strong id="statApproved">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div><span>Delivered Orders</span><strong id="statDelivered">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                        <div><span>Partner Earnings</span><strong id="statEarnings">₹0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-route"></i></div>
+                        <div><span>Active Deliveries</span><strong id="statActive">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div><span>Today's Deliveries</span><strong id="statTodayDelivered">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-ban"></i></div>
+                        <div><span>Cancelled Orders</span><strong id="statCancelled">0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-coins"></i></div>
+                        <div><span>Avg. Earning / Delivery</span><strong id="statAvgEarning">₹0</strong></div>
+                    </article>
+                    <article class="statCard">
+                        <div class="statIcon"><i class="fa-solid fa-road"></i></div>
+                        <div><span>Total Distance</span><strong id="statDistance">0 km</strong></div>
+                    </article>
+                </div>
+
+                <div class="twoCol">
+                    <article class="panel">
+                        <div class="panelHeader">
+                            <div><h2>Pending Applications</h2><p>Newest partner requests</p></div>
+                            <button class="textBtn" data-go="applications">View all</button>
+                        </div>
+                        <div id="overviewApplications" class="compactList"></div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panelHeader">
+                            <div><h2>Recent Deliveries</h2><p>Latest completed deliveries</p></div>
+                            <button class="textBtn" data-go="deliveries">View all</button>
+                        </div>
+                        <div id="overviewDeliveries" class="compactList"></div>
+                    </article>
+                </div>
+
+                <div class="twoCol">
+                    <article class="panel">
+                        <div class="panelHeader">
+                            <div><h2>Top Delivery Partners</h2><p>Ranked by completed deliveries and earnings</p></div>
+                        </div>
+                        <div id="topPartnersList" class="compactList"></div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panelHeader">
+                            <div><h2>Today's Performance</h2><p>Live operational summary for today</p></div>
+                        </div>
+                        <div id="todayPerformance" class="performanceGrid"></div>
+                    </article>
+                </div>
+
+                <article class="panel">
+                    <div class="panelHeader">
+                        <div><h2>Partner Performance</h2><p>Delivered orders and total earnings by delivery boy</p></div>
+                    </div>
+                    <div class="tableWrap">
+                        <table>
+                            <thead><tr><th>Rank</th><th>Partner</th><th>Mobile</th><th>Delivered</th><th>Today</th><th>Active</th><th>Cancelled</th><th>Distance</th><th>Earnings</th><th>Avg/Delivery</th><th>Last Delivery</th></tr></thead>
+                            <tbody id="overviewPartnerTable"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+
+            <section class="pageSection" id="applicationsSection">
+                <div class="toolbar">
+                    <div class="searchBox"><i class="fa-solid fa-magnifying-glass"></i><input id="applicationSearch" placeholder="Search name, mobile or vehicle"></div>
+                    <div class="segmented" id="applicationFilters">
+                        <button class="active" data-filter="all">All</button>
+                        <button data-filter="pending">Pending</button>
+                        <button data-filter="approved">Approved</button>
+                        <button data-filter="rejected">Rejected</button>
+                    </div>
+                </div>
+                <div id="applicationsGrid" class="applicationGrid"></div>
+            </section>
+
+            <section class="pageSection" id="partnersSection">
+                <div class="toolbar">
+                    <div class="searchBox"><i class="fa-solid fa-magnifying-glass"></i><input id="partnerSearch" placeholder="Search delivery partner"></div>
+                </div>
+                <div id="partnersGrid" class="partnerGrid"></div>
+            </section>
+
+            <section class="pageSection" id="deliveriesSection">
+                <div class="toolbar">
+                    <div class="searchBox"><i class="fa-solid fa-magnifying-glass"></i><input id="deliverySearch" placeholder="Search order, partner or customer"></div>
+                    <div class="segmented" id="deliveryFilters">
+                        <button class="active" data-filter="all">All</button>
+                        <button data-filter="active">Active</button>
+                        <button data-filter="delivered">Delivered</button>
+                        <button data-filter="cancelled">Cancelled</button>
+                    </div>
+                </div>
+                <div class="tableWrap panel noPad">
+                    <table>
+                        <thead><tr><th>Order</th><th>Payment</th><th>Customer</th><th>Delivery Partner</th><th>Status</th><th>Distance</th><th>Earnings</th><th>Time</th></tr></thead>
+                        <tbody id="deliveriesTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="pageSection" id="notificationsSection">
+                <article class="panel">
+                    <div class="panelHeader">
+                        <div><h2>Live Notifications</h2><p>New applications and delivery activity from Supabase Realtime</p></div>
+                        <button class="textBtn" id="clearNotificationsBtn">Clear</button>
+                    </div>
+                    <div id="notificationsList" class="notificationList"></div>
+                </article>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="modal" id="applicationModal" aria-hidden="true">
+    <div class="modalBackdrop" data-close-modal></div>
+    <div class="modalCard">
+        <div class="modalHeader">
+            <div><span class="eyebrow">PARTNER APPLICATION</span><h2 id="modalName">Delivery Partner</h2><p id="modalMobile"></p></div>
+            <button class="modalClose" data-close-modal><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="detailGrid" id="applicationDetails"></div>
+
+        <h3 class="sectionTitle">Submitted Documents</h3>
+        <div class="documentGrid" id="applicationDocuments"></div>
+
+        <div class="modalActions" id="applicationModalActions"></div>
+    </div>
+</div>
+
+<div class="toastStack" id="toastStack"></div>
+
+<script>
+(() => {
+const SUPABASE_URL = "https://ycqwdeiykbkfmmlpgdzd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_-4RzQVudUy_VsvSpHTxNfg_hrdsQW0j";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const state = {
+    applications: [],
+    cashOrders: [],
+    upiOrders: [],
+    orders: [],
+    partnerStats: [],
+    notifications: JSON.parse(localStorage.getItem("cezoo_admin_notifications") || "[]"),
+    applicationFilter: "all",
+    deliveryFilter: "all",
+    selectedApplication: null,
+    channels: []
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clean = v => String(v ?? "");
+const esc = v => clean(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const money = v => new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(Number(v)||0);
+const fmtDate = v => {
+    if(!v) return "—";
+    const d = new Date(v); if(Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat("en-IN",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Kolkata"}).format(d);
+};
+const shortDate = v => {
+    if(!v) return "—";
+    const d = new Date(v); if(Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Kolkata"}).format(d);
+};
+const initials = name => clean(name || "DP").trim().split(/\s+/).slice(0,2).map(x=>x[0]?.toUpperCase()||"").join("") || "DP";
+const statusClass = s => clean(s || "pending").toLowerCase().replace(/\s+/g,"_");
+
+function toast(message){
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = message;
+    $("#toastStack").appendChild(el);
+    setTimeout(()=>el.remove(),3200);
+}
+
+function setConnection(mode,text){
+    $("#connectionDot").className = "connectionDot " + mode;
+    $("#connectionText").textContent = text;
+}
+
+function pushNotification(title,message,type="activity"){
+    const item = {id:crypto.randomUUID?.() || String(Date.now()+Math.random()),title,message,type,at:new Date().toISOString(),read:false};
+    state.notifications.unshift(item);
+    state.notifications = state.notifications.slice(0,100);
+    localStorage.setItem("cezoo_admin_notifications",JSON.stringify(state.notifications));
+    renderNotifications();
+    if(document.hidden && Notification.permission === "granted"){
+        try{ new Notification(title,{body:message}); }catch(e){}
+    }
+}
+
+function orderEarning(o){
+    return Number(o.delivery_boy_earnings ?? o.delivery_boy_stats?.earnings ?? 0) || 0;
+}
+function orderTime(o){
+    return o.delivered_at || o.updated_at || o.created_at || "";
+}
+function normalizeOrder(o,type){
+    return {...o,_payment:type,_earning:orderEarning(o),_time:orderTime(o)};
+}
+
+async function loadAll(showToast=false){
+    $("#refreshBtn i").classList.add("fa-spin");
+    try{
+        const [apps,cash,upi,tokens] = await Promise.all([
+            sb.from("delivery_partner_applications").select("*").order("created_at",{ascending:false}),
+            sb.from("delivery_cash_orders").select("*").order("created_at",{ascending:false}),
+            sb.from("delivery_upi_orders").select("*").order("created_at",{ascending:false}),
+            sb.from("delivery_partner_device_tokens").select("mobile,device_token,updated_at")
+        ]);
+        for(const r of [apps,cash,upi]) if(r.error) throw r.error;
+        state.applications = apps.data || [];
+        state.cashOrders = (cash.data || []).map(o=>normalizeOrder(o,"Cash"));
+        state.upiOrders = (upi.data || []).map(o=>normalizeOrder(o,"UPI"));
+        state.orders = [...state.cashOrders,...state.upiOrders].sort((a,b)=>new Date(b._time||0)-new Date(a._time||0));
+        state.tokens = tokens.error ? [] : (tokens.data || []);
+        buildPartnerStats();
+        renderAll();
+        setConnection("online","Live with Supabase");
+        if(showToast) toast("Dashboard refreshed");
+    }catch(error){
+        console.error(error);
+        setConnection("error","Supabase error");
+        toast("Could not load dashboard: " + (error.message || "Unknown error"));
+    }finally{
+        $("#refreshBtn i").classList.remove("fa-spin");
+    }
+}
+
+function latestApplicationByMobile(){
+    const map = new Map();
+    for(const a of state.applications){
+        const key=clean(a.mobile);
+        if(!map.has(key)) map.set(key,a);
+    }
+    return map;
+}
+
+function buildPartnerStats(){
+    const appMap = latestApplicationByMobile();
+    const mobiles = new Set();
+    state.applications.filter(a=>statusClass(a.status)==="approved").forEach(a=>mobiles.add(clean(a.mobile)));
+    state.orders.filter(o=>o.delivery_boy_mobile).forEach(o=>mobiles.add(clean(o.delivery_boy_mobile)));
+
+    const todayKey = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+
+    state.partnerStats = [...mobiles].filter(Boolean).map(mobile=>{
+        const app = appMap.get(mobile) || {};
+        const orders = state.orders.filter(o=>clean(o.delivery_boy_mobile)===mobile);
+        const delivered = orders.filter(o=>statusClass(o.delivery_status)==="delivered");
+        const cancelled = orders.filter(o=>statusClass(o.delivery_status)==="cancelled");
+        const active = orders.filter(o=>o.delivery_boy_accepted===true && !["delivered","cancelled"].includes(statusClass(o.delivery_status)));
+        const earnings = delivered.reduce((t,o)=>t+orderEarning(o),0);
+        const totalDistance = delivered.reduce((t,o)=>{
+            const d=Number(o.delivery_distance ?? o.distance ?? 0);
+            return t + (Number.isFinite(d) ? d : 0);
+        },0);
+        const todayDelivered = delivered.filter(o=>{
+            const dt = new Date(o._time || o.delivered_at || o.created_at || 0);
+            if(Number.isNaN(dt.getTime())) return false;
+            return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(dt)===todayKey;
+        });
+        const sortedDelivered=[...delivered].sort((a,b)=>new Date(b._time||0)-new Date(a._time||0));
+        const last = sortedDelivered[0];
+        return {
+            mobile,
+            name: app.full_name || orders.find(o=>o.delivery_boy_name)?.delivery_boy_name || "Delivery Partner",
+            vehicle: app.vehicle_number || "—",
+            status: app.status || "approved",
+            delivered: delivered.length,
+            todayDelivered: todayDelivered.length,
+            active: active.length,
+            cancelled: cancelled.length,
+            earnings,
+            totalDistance,
+            avgEarning: delivered.length ? earnings/delivered.length : 0,
+            lastDelivery: last?._time || null,
+            token: state.tokens?.find(t=>clean(t.mobile)===mobile)?.device_token || ""
+        };
+    }).sort((a,b)=>{
+        if(b.delivered!==a.delivered) return b.delivered-a.delivered;
+        return b.earnings-a.earnings;
+    });
+}
+
+function renderStats(){
+    const latestApps = [...latestApplicationByMobile().values()];
+    const pending = latestApps.filter(a=>statusClass(a.status)==="pending").length;
+    const approved = latestApps.filter(a=>statusClass(a.status)==="approved").length;
+    const delivered = state.orders.filter(o=>statusClass(o.delivery_status)==="delivered");
+    const cancelled = state.orders.filter(o=>statusClass(o.delivery_status)==="cancelled");
+    const active = state.orders.filter(o=>o.delivery_boy_accepted===true && !["delivered","cancelled"].includes(statusClass(o.delivery_status)));
+    const earnings = delivered.reduce((t,o)=>t+orderEarning(o),0);
+    const totalDistance = delivered.reduce((t,o)=>{
+        const d=Number(o.delivery_distance ?? o.distance ?? 0);
+        return t + (Number.isFinite(d) ? d : 0);
+    },0);
+    const avgEarning = delivered.length ? earnings/delivered.length : 0;
+
+    const todayKey = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    const todayDelivered = delivered.filter(o=>{
+        const dt=new Date(o._time || o.delivered_at || o.created_at || 0);
+        if(Number.isNaN(dt.getTime())) return false;
+        return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(dt)===todayKey;
+    });
+
+    $("#statApplications").textContent = latestApps.length;
+    $("#statPending").textContent = pending;
+    $("#statApproved").textContent = approved;
+    $("#statDelivered").textContent = delivered.length;
+    $("#statActive").textContent = active.length;
+    $("#statEarnings").textContent = money(earnings);
+    $("#statTodayDelivered").textContent = todayDelivered.length;
+    $("#statCancelled").textContent = cancelled.length;
+    $("#statAvgEarning").textContent = money(avgEarning);
+    $("#statDistance").textContent = totalDistance.toFixed(1) + " km";
+    $("#pendingNavBadge").textContent = pending || "";
+}
+
+function renderOverview(){
+    const pending = [...latestApplicationByMobile().values()].filter(a=>statusClass(a.status)==="pending").slice(0,5);
+    $("#overviewApplications").innerHTML = pending.length ? pending.map(a=>`
+        <div class="compactRow">
+            <div class="avatar">${esc(initials(a.full_name))}</div>
+            <div class="compactMain"><strong>${esc(a.full_name || "Delivery Partner")}</strong><span>${esc(a.mobile || "—")} · ${esc(a.vehicle_number || "No vehicle")}</span></div>
+            <span class="status pending">Pending</span>
+        </div>`).join("") : `<div class="emptyState">No pending applications</div>`;
+
+    const recent = state.orders.filter(o=>statusClass(o.delivery_status)==="delivered").slice(0,5);
+    $("#overviewDeliveries").innerHTML = recent.length ? recent.map(o=>`
+        <div class="compactRow">
+            <div class="avatar">${esc(initials(o.delivery_boy_name || "DP"))}</div>
+            <div class="compactMain"><strong>${esc(o.delivery_boy_name || "Delivery Partner")}</strong><span>Order ${esc(o.order_id || o.id || "—")} · ${esc(o._payment)}</span></div>
+            <div class="money">${money(orderEarning(o))}</div>
+        </div>`).join("") : `<div class="emptyState">No completed deliveries yet</div>`;
+
+    const top = state.partnerStats.slice(0,5);
+    $("#topPartnersList").innerHTML = top.length ? top.map((p,i)=>`
+        <div class="compactRow">
+            <div class="rankBadge">${i+1}</div>
+            <div class="avatar">${esc(initials(p.name))}</div>
+            <div class="compactMain"><strong>${esc(p.name)}</strong><span>${p.delivered} deliveries · ${p.totalDistance.toFixed(1)} km</span></div>
+            <div class="money">${money(p.earnings)}</div>
+        </div>`).join("") : `<div class="emptyState">No partner performance yet</div>`;
+
+    const todayDelivered = state.partnerStats.reduce((t,p)=>t+p.todayDelivered,0);
+    const todayEarnings = state.orders.filter(o=>{
+        if(statusClass(o.delivery_status)!=="delivered") return false;
+        const d=new Date(o._time || o.delivered_at || o.created_at || 0);
+        if(Number.isNaN(d.getTime())) return false;
+        const k=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+        const nowK=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+        return k===nowK;
+    }).reduce((t,o)=>t+orderEarning(o),0);
+    const activePartners = state.partnerStats.filter(p=>p.active>0).length;
+    const bestToday = [...state.partnerStats].sort((a,b)=>b.todayDelivered-a.todayDelivered)[0];
+
+    $("#todayPerformance").innerHTML = `
+        <div class="performanceBox"><span>Delivered Today</span><strong>${todayDelivered}</strong></div>
+        <div class="performanceBox"><span>Today's Earnings</span><strong>${money(todayEarnings)}</strong></div>
+        <div class="performanceBox"><span>Partners on Active Orders</span><strong>${activePartners}</strong></div>
+        <div class="performanceBox"><span>Top Today</span><strong style="font-size:13px">${esc(bestToday?.todayDelivered ? bestToday.name : "—")}</strong></div>
+    `;
+
+    $("#overviewPartnerTable").innerHTML = state.partnerStats.length ? state.partnerStats.slice(0,30).map((p,i)=>`
+        <tr>
+            <td><strong>#${i+1}</strong></td>
+            <td class="nameCell"><strong>${esc(p.name)}</strong><span>${esc(p.vehicle)}</span></td>
+            <td>${esc(p.mobile)}</td>
+            <td>${p.delivered}</td>
+            <td>${p.todayDelivered}</td>
+            <td>${p.active}</td>
+            <td>${p.cancelled}</td>
+            <td>${p.totalDistance.toFixed(1)} km</td>
+            <td><strong>${money(p.earnings)}</strong></td>
+            <td>${money(p.avgEarning)}</td>
+            <td>${shortDate(p.lastDelivery)}</td>
+        </tr>`).join("") : `<tr><td colspan="11"><div class="emptyState">No partner activity yet</div></td></tr>`;
+}
+
+function getFilteredApplications(){
+    const q = clean($("#applicationSearch")?.value).toLowerCase().trim();
+    return [...latestApplicationByMobile().values()].filter(a=>{
+        const statusOk = state.applicationFilter==="all" || statusClass(a.status)===state.applicationFilter;
+        const text = [a.full_name,a.mobile,a.vehicle_number,a.gender].join(" ").toLowerCase();
+        return statusOk && (!q || text.includes(q));
+    });
+}
+
+function renderApplications(){
+    const rows = getFilteredApplications();
+    $("#applicationsGrid").innerHTML = rows.length ? rows.map(a=>{
+        const s=statusClass(a.status);
+        return `<article class="applicationCard">
+            <div class="applicationTop">
+                <div class="avatar">${esc(initials(a.full_name))}</div>
+                <div class="applicationInfo"><h3>${esc(a.full_name || "Delivery Partner")}</h3><p>+91 ${esc(a.mobile || "—")}</p></div>
+                <span class="status ${s}">${esc(a.status || "pending")}</span>
+            </div>
+            <div class="applicationMeta">
+                <div class="metaBox"><span>Vehicle</span><strong>${esc(a.vehicle_number || "—")}</strong></div>
+                <div class="metaBox"><span>Applied</span><strong>${shortDate(a.created_at)}</strong></div>
+            </div>
+            <div class="cardActions">
+                <button class="viewBtn" onclick="CEZOO_ADMIN.openApplication('${esc(a.id)}')">View Documents</button>
+                ${s==="pending" ? `<button class="approveBtn" onclick="CEZOO_ADMIN.updateApplication('${esc(a.id)}','approved')">Accept</button><button class="rejectBtn" onclick="CEZOO_ADMIN.updateApplication('${esc(a.id)}','rejected')" title="Reject"><i class="fa-solid fa-xmark"></i></button>` : ""}
+            </div>
+        </article>`;
+    }).join("") : `<div class="emptyState">No applications found</div>`;
+}
+
+function renderPartners(){
+    const q=clean($("#partnerSearch")?.value).toLowerCase().trim();
+    const rows=state.partnerStats.filter(p=>[p.name,p.mobile,p.vehicle].join(" ").toLowerCase().includes(q));
+    $("#partnersGrid").innerHTML = rows.length ? rows.map((p,i)=>`
+        <article class="partnerCard">
+            <div class="partnerCardTop">
+                <div class="avatar">${esc(initials(p.name))}</div>
+                <div class="applicationInfo"><h3>${esc(p.name)}</h3><p>+91 ${esc(p.mobile)} · ${esc(p.vehicle)}</p></div>
+                <span class="status approved">#${i+1}</span>
+            </div>
+            <div class="partnerStats">
+                <div class="partnerStat"><span>Total Delivered</span><strong>${p.delivered}</strong></div>
+                <div class="partnerStat"><span>Today</span><strong>${p.todayDelivered}</strong></div>
+                <div class="partnerStat"><span>Active</span><strong>${p.active}</strong></div>
+                <div class="partnerStat"><span>Cancelled</span><strong>${p.cancelled}</strong></div>
+                <div class="partnerStat"><span>Total Distance</span><strong>${p.totalDistance.toFixed(1)} km</strong></div>
+                <div class="partnerStat"><span>Earnings</span><strong>${money(p.earnings)}</strong></div>
+            </div>
+            <div class="partnerExtra">
+                <span>Avg / Delivery <strong>${money(p.avgEarning)}</strong></span>
+                <span>Last Delivery <strong>${shortDate(p.lastDelivery)}</strong></span>
+            </div>
+        </article>`).join("") : `<div class="emptyState">No delivery partners found</div>`;
+}
+
+function getFilteredOrders(){
+    const q=clean($("#deliverySearch")?.value).toLowerCase().trim();
+    return state.orders.filter(o=>{
+        const s=statusClass(o.delivery_status);
+        let filterOk=true;
+        if(state.deliveryFilter==="delivered") filterOk=s==="delivered";
+        else if(state.deliveryFilter==="cancelled") filterOk=s==="cancelled";
+        else if(state.deliveryFilter==="active") filterOk=o.delivery_boy_accepted===true && !["delivered","cancelled"].includes(s);
+        const text=[o.order_id,o.id,o.delivery_boy_name,o.delivery_boy_mobile,o.customer_name,o.user_name,o.customer_mobile,o.user_mobile].join(" ").toLowerCase();
+        return filterOk && (!q || text.includes(q));
+    });
+}
+
+function renderDeliveries(){
+    const rows=getFilteredOrders();
+    $("#deliveriesTable").innerHTML = rows.length ? rows.map(o=>{
+        const s=statusClass(o.delivery_status);
+        const customer=o.customer_name || o.user_name || o.name || "Customer";
+        const partner=o.delivery_boy_name || (o.delivery_boy_accepted ? "Assigned Partner" : "Not assigned");
+        const distance=Number(o.delivery_distance);
+        return `<tr>
+            <td class="nameCell"><strong>${esc(o.order_id || o.id || "—")}</strong><span>${esc(o._payment)}</span></td>
+            <td>${esc(o._payment)}</td>
+            <td class="nameCell"><strong>${esc(customer)}</strong><span>${esc(o.customer_mobile || o.user_mobile || o.mobile || "")}</span></td>
+            <td class="nameCell"><strong>${esc(partner)}</strong><span>${esc(o.delivery_boy_mobile || "")}</span></td>
+            <td><span class="status ${s}">${esc((o.delivery_status || "assigned").replaceAll("_"," "))}</span></td>
+            <td>${Number.isFinite(distance)?distance.toFixed(2)+" km":"—"}</td>
+            <td><strong>${money(orderEarning(o))}</strong></td>
+            <td>${shortDate(o._time)}</td>
+        </tr>`;
+    }).join("") : `<tr><td colspan="8"><div class="emptyState">No deliveries found</div></td></tr>`;
+}
+
+function renderNotifications(){
+    $("#notificationNavBadge").textContent = state.notifications.length || "";
+    $("#notificationsList").innerHTML = state.notifications.length ? state.notifications.map(n=>`
+        <div class="notificationItem">
+            <div class="notificationIcon"><i class="${n.type==="application"?"fa-solid fa-user-plus":n.type==="delivery"?"fa-solid fa-box":"fa-regular fa-bell"}"></i></div>
+            <div class="notificationText"><strong>${esc(n.title)}</strong><p>${esc(n.message)}</p><time>${fmtDate(n.at)}</time></div>
+        </div>`).join("") : `<div class="emptyState">No notifications yet. Live activity will appear here.</div>`;
+}
+
+function renderAll(){
+    renderStats();renderOverview();renderApplications();renderPartners();renderDeliveries();renderNotifications();
+}
+
+async function openApplication(id){
+    const a=state.applications.find(x=>clean(x.id)===clean(id)); if(!a) return;
+    state.selectedApplication=a;
+    $("#modalName").textContent=a.full_name || "Delivery Partner";
+    $("#modalMobile").textContent="+91 "+(a.mobile||"—");
+    $("#applicationDetails").innerHTML = [
+        ["Status",a.status||"pending"],["Gender",a.gender||"—"],["Vehicle Number",a.vehicle_number||"—"],["Applied",fmtDate(a.created_at)]
+    ].map(([k,v])=>`<div class="detailBox"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("");
+
+    const docs=[
+        ["Partner Photo",a.insurance_path,"fa-user"],
+        ["Vehicle Photo",a.vehicle_photo_path,"fa-motorcycle"],
+        ["RC Card",a.rc_card_path,"fa-id-card"],
+        ["Driving Licence",a.license_path,"fa-address-card"],
+        ["Aadhaar",a.aadhaar_path,"fa-fingerprint"],
+        ["PAN Card",a.pan_path,"fa-credit-card"]
+    ];
+    $("#applicationDocuments").innerHTML = docs.map(([label,path,icon])=>`
+        <button class="documentBtn" ${path?`onclick="CEZOO_ADMIN.openDocument('${esc(path)}')"`:"disabled"}>
+            <i class="fa-solid ${icon}"></i><div><strong>${esc(label)}</strong><span>${path?"Tap to view":"Not uploaded"}</span></div>
+        </button>`).join("");
+
+    const s=statusClass(a.status);
+    $("#applicationModalActions").innerHTML = s==="pending" ? `
+        <button class="modalReject" onclick="CEZOO_ADMIN.updateApplication('${esc(a.id)}','rejected')">Reject</button>
+        <button class="modalApprove" onclick="CEZOO_ADMIN.updateApplication('${esc(a.id)}','approved')">Accept Partner</button>` :
+        `<span class="status ${s}">${esc(a.status)}</span>`;
+    $("#applicationModal").classList.add("open");
+    $("#applicationModal").setAttribute("aria-hidden","false");
+}
+
+async function openDocument(path){
+    try{
+        let {data,error}=await sb.storage.from("delivery-documents").createSignedUrl(path,120);
+        if(!error && data?.signedUrl){ window.open(data.signedUrl,"_blank","noopener"); return; }
+        const pub=sb.storage.from("delivery-documents").getPublicUrl(path);
+        if(pub.data?.publicUrl){ window.open(pub.data.publicUrl,"_blank","noopener"); return; }
+        throw error || new Error("Document URL unavailable");
+    }catch(e){ toast("Could not open document"); console.error(e); }
+}
+
+async function updateApplication(id,status){
+    const a=state.applications.find(x=>clean(x.id)===clean(id)); if(!a) return;
+    try{
+        const {data,error}=await sb.from("delivery_partner_applications").update({status}).eq("id",id).select("*").single();
+        if(error) throw error;
+        const i=state.applications.findIndex(x=>clean(x.id)===clean(id)); if(i>=0) state.applications[i]=data;
+        toast(`${a.full_name || "Partner"} ${status==="approved"?"accepted":"rejected"}`);
+        pushNotification(status==="approved"?"Partner approved":"Partner rejected",`${a.full_name || a.mobile} was ${status}.`,"application");
+        renderAll();
+        if(state.selectedApplication && clean(state.selectedApplication.id)===clean(id)){
+            state.selectedApplication=data; openApplication(id);
+        }
+    }catch(error){
+        console.error(error);
+        toast("Update failed: "+(error.message||"Check Supabase policy"));
+    }
+}
+
+function closeModal(){ $("#applicationModal").classList.remove("open");$("#applicationModal").setAttribute("aria-hidden","true");state.selectedApplication=null; }
+
+function showSection(name){
+    $$(".pageSection").forEach(s=>s.classList.remove("active"));
+    $$(".navItem").forEach(n=>n.classList.toggle("active",n.dataset.section===name));
+    $("#"+name+"Section")?.classList.add("active");
+    const titles={
+        overview:["Overview","Live delivery operations dashboard"],
+        applications:["Partner Applications","Review documents and approve or reject delivery partners"],
+        partners:["Delivery Partners","Partner performance, earnings and active deliveries"],
+        deliveries:["Deliveries","See exactly which delivery boy handled every order"],
+        notifications:["Notifications","Live application and delivery activity"]
+    };
+    $("#pageTitle").textContent=titles[name]?.[0]||"Dashboard";
+    $("#pageSubtitle").textContent=titles[name]?.[1]||"";
+    $("#sidebar").classList.remove("open");
+}
+
+function subscribeRealtime(){
+    state.channels.forEach(c=>sb.removeChannel(c));state.channels=[];
+    const appChannel=sb.channel("cezoo-admin-applications")
+        .on("postgres_changes",{event:"*",schema:"public",table:"delivery_partner_applications"},payload=>{
+            const row=payload.new || payload.old || {};
+            if(payload.eventType==="INSERT") pushNotification("New partner application",`${row.full_name || "Delivery partner"} (${row.mobile || ""}) submitted an application.`,"application");
+            else if(payload.eventType==="UPDATE") pushNotification("Application updated",`${row.full_name || row.mobile || "Partner"} is now ${row.status || "updated"}.`,"application");
+            loadAll(false);
+        }).subscribe(s=>{if(s==="SUBSCRIBED") setConnection("online","Live with Supabase");});
+
+    const orderChannel=sb.channel("cezoo-admin-orders")
+        .on("postgres_changes",{event:"*",schema:"public",table:"delivery_cash_orders"},p=>handleOrderRealtime(p,"Cash"))
+        .on("postgres_changes",{event:"*",schema:"public",table:"delivery_upi_orders"},p=>handleOrderRealtime(p,"UPI"))
+        .subscribe();
+    state.channels=[appChannel,orderChannel];
+}
+
+function handleOrderRealtime(payload,type){
+    const row=payload.new || payload.old || {};
+    if(payload.eventType==="UPDATE"){
+        const oldStatus=statusClass(payload.old?.delivery_status), newStatus=statusClass(row.delivery_status);
+        if(oldStatus!==newStatus){
+            const partner=row.delivery_boy_name || row.delivery_boy_mobile || "Delivery partner";
+            if(newStatus==="delivered") pushNotification("Delivery completed",`${partner} delivered order ${row.order_id || row.id || ""}.`,"delivery");
+            else pushNotification("Delivery status changed",`Order ${row.order_id || row.id || ""}: ${newStatus.replaceAll("_"," ")} by ${partner}.`,"delivery");
+        }
+    }else if(payload.eventType==="INSERT"){
+        pushNotification("New delivery order",`A new ${type} delivery order ${row.order_id || row.id || ""} was added.`,"delivery");
+    }
+    loadAll(false);
+}
+
+function bind(){
+    $$(".navItem").forEach(b=>b.addEventListener("click",()=>showSection(b.dataset.section)));
+    $$("[data-go]").forEach(b=>b.addEventListener("click",()=>showSection(b.dataset.go)));
+    $("#refreshBtn").addEventListener("click",()=>loadAll(true));
+    $("#menuBtn").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
+    $$("[data-close-modal]").forEach(x=>x.addEventListener("click",closeModal));
+    $("#applicationSearch").addEventListener("input",renderApplications);
+    $("#partnerSearch").addEventListener("input",renderPartners);
+    $("#deliverySearch").addEventListener("input",renderDeliveries);
+    $("#applicationFilters").addEventListener("click",e=>{
+        const b=e.target.closest("button");if(!b)return;
+        $$("#applicationFilters button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+        state.applicationFilter=b.dataset.filter;renderApplications();
+    });
+    $("#deliveryFilters").addEventListener("click",e=>{
+        const b=e.target.closest("button");if(!b)return;
+        $$("#deliveryFilters button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+        state.deliveryFilter=b.dataset.filter;renderDeliveries();
+    });
+    $("#clearNotificationsBtn").addEventListener("click",()=>{state.notifications=[];localStorage.removeItem("cezoo_admin_notifications");renderNotifications();});
+    $("#enableNotificationsBtn").addEventListener("click",async()=>{
+        if(!("Notification" in window)){toast("Browser notifications are not supported");return;}
+        const permission=await Notification.requestPermission();
+        toast(permission==="granted"?"Browser notifications enabled":"Notification permission not granted");
+    });
+}
+
+window.CEZOO_ADMIN={openApplication,openDocument,updateApplication};
+
+document.addEventListener("DOMContentLoaded",async()=>{
+    bind();
+    renderNotifications();
+    await loadAll(false);
+    subscribeRealtime();
+});
+})();
+
+</script>
+</body>
+</html>

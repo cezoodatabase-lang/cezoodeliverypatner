@@ -178,6 +178,110 @@ tbody tr:last-child td{border-bottom:0}
     .performanceGrid{grid-template-columns:1fr 1fr}
 }
 
+
+.orderClickable{
+    cursor:pointer;
+    transition:background .15s ease;
+}
+.orderClickable:hover{
+    background:#fafafa;
+}
+.orderClickable:active{
+    background:#f5f5f5;
+}
+.orderItemsModalCard{
+    width:min(920px,96vw);
+}
+.orderItemsBody{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+.orderItemRow{
+    display:grid;
+    grid-template-columns:56px minmax(0,1fr) auto;
+    gap:12px;
+    align-items:center;
+    padding:11px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:#fff;
+}
+.orderItemImage{
+    width:56px;
+    height:56px;
+    border-radius:11px;
+    overflow:hidden;
+    background:#f3f4f6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#999;
+}
+.orderItemImage img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+.orderItemInfo{
+    min-width:0;
+}
+.orderItemInfo strong{
+    display:block;
+    font-size:11px;
+    line-height:1.4;
+    overflow-wrap:anywhere;
+}
+.orderItemInfo span{
+    display:block;
+    margin-top:4px;
+    color:var(--muted);
+    font-size:9px;
+}
+.orderItemPrice{
+    text-align:right;
+}
+.orderItemPrice strong{
+    display:block;
+    font-size:11px;
+}
+.orderItemPrice span{
+    display:block;
+    margin-top:4px;
+    color:var(--muted);
+    font-size:9px;
+}
+.orderItemsFooter{
+    margin-top:16px;
+    padding:14px;
+    border-radius:13px;
+    background:#f8f9fa;
+}
+.orderTotalRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:8px;
+    color:var(--muted);
+    font-size:10px;
+}
+.orderTotalRow:last-child{
+    margin-bottom:0;
+    padding-top:9px;
+    border-top:1px dashed #d9dce0;
+    color:var(--text);
+    font-weight:800;
+}
+.orderTotalRow strong{
+    color:var(--text);
+}
+@media(max-width:600px){
+    .orderItemRow{grid-template-columns:48px minmax(0,1fr) auto}
+    .orderItemImage{width:48px;height:48px}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -392,6 +496,30 @@ tbody tr:last-child td{border-bottom:0}
         <div class="documentGrid" id="applicationDocuments"></div>
 
         <div class="modalActions" id="applicationModalActions"></div>
+    </div>
+</div>
+
+
+<div class="modal" id="orderItemsModal" aria-hidden="true">
+    <div class="modalBackdrop" data-close-order-modal></div>
+    <div class="modalCard orderItemsModalCard">
+        <div class="modalHeader">
+            <div>
+                <span class="eyebrow">DELIVERY DETAILS</span>
+                <h2 id="orderItemsTitle">Order</h2>
+                <p id="orderItemsSubtitle"></p>
+            </div>
+            <button class="modalClose" data-close-order-modal><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="detailGrid" id="orderItemsSummary"></div>
+
+        <h3 class="sectionTitle">Delivered Items</h3>
+        <div id="orderItemsBody" class="orderItemsBody">
+            <div class="emptyState">Loading items…</div>
+        </div>
+
+        <div class="orderItemsFooter" id="orderItemsFooter"></div>
     </div>
 </div>
 
@@ -723,8 +851,8 @@ function renderDeliveries(){
         const customer=o.customer_name || o.user_name || o.name || "Customer";
         const partner=o.delivery_boy_name || (o.delivery_boy_accepted ? "Assigned Partner" : "Not assigned");
         const distance=Number(o.delivery_distance);
-        return `<tr>
-            <td class="nameCell"><strong>${esc(o.order_id || o.id || "—")}</strong><span>${esc(o._payment)}</span></td>
+        return `<tr class="orderClickable" onclick="CEZOO_ADMIN.openOrderItems('${esc(o._payment)}','${esc(o.order_id || o.id || "")}')">
+            <td class="nameCell"><strong>${esc(o.order_id || o.id || "—")}</strong><span>${esc(o._payment)} · Click to view items</span></td>
             <td>${esc(o._payment)}</td>
             <td class="nameCell"><strong>${esc(customer)}</strong><span>${esc(o.customer_mobile || o.user_mobile || o.mobile || "")}</span></td>
             <td class="nameCell"><strong>${esc(partner)}</strong><span>${esc(o.delivery_boy_mobile || "")}</span></td>
@@ -747,6 +875,186 @@ function renderNotifications(){
 
 function renderAll(){
     renderStats();renderOverview();renderApplications();renderPartners();renderDeliveries();renderNotifications();
+}
+
+
+function getOrderItemsArray(order){
+    let items = order?.items;
+    if(typeof items === "string"){
+        try{ items = JSON.parse(items); }catch(e){ items = []; }
+    }
+    return Array.isArray(items) ? items : [];
+}
+
+function itemQty(item){
+    const n = Number(item?.qty ?? item?.quantity ?? item?.count ?? item?.ordered_qty ?? 1);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+function itemUnitPrice(item){
+    const values = [
+        item?.discount_price,
+        item?.price,
+        item?.unit_price,
+        item?.selling_price,
+        item?.final_price,
+        item?.original_price
+    ];
+    for(const v of values){
+        const n = Number(v);
+        if(Number.isFinite(n)) return n;
+    }
+    return 0;
+}
+
+function itemName(item){
+    return item?.name ||
+           item?.product_name ||
+           item?.productName ||
+           item?.title ||
+           item?.item_name ||
+           (item?.product_id ? "Product " + item.product_id : "Product");
+}
+
+function itemImage(item){
+    return item?.image1 ||
+           item?.image ||
+           item?.image_url ||
+           item?.product_image ||
+           item?.productImage ||
+           item?.thumbnail ||
+           item?.photo ||
+           item?.photo_url ||
+           "";
+}
+
+function itemUnitText(item){
+    return item?.unit || item?.quantity_text || item?.size || "";
+}
+
+async function enrichOrderItems(order, items){
+    const result = [...items];
+    const groups = {};
+
+    items.forEach((item,index)=>{
+        const table = clean(item.product_table || item.table_name || item.table).trim();
+        const id = Number(item.product_id ?? item.id);
+        const hasRealName = clean(item.name || item.product_name || item.productName || item.title || item.item_name).trim();
+        const hasRealImage = clean(itemImage(item)).trim();
+
+        if(!table || !Number.isFinite(id) || hasRealName || hasRealImage) return;
+        if(!groups[table]) groups[table] = [];
+        groups[table].push({index,id});
+    });
+
+    for(const [table, refs] of Object.entries(groups)){
+        try{
+            const ids = [...new Set(refs.map(r=>r.id))];
+            const {data,error} = await sb.from(table)
+                .select("id,name,name_telugu,quantity,unit,original_price,discount_price,image1")
+                .in("id",ids);
+
+            if(error) continue;
+            const map = new Map((data || []).map(p=>[Number(p.id),p]));
+            refs.forEach(ref=>{
+                const p = map.get(ref.id);
+                if(p) result[ref.index] = {...result[ref.index],...p};
+            });
+        }catch(e){}
+    }
+
+    return result;
+}
+
+async function openOrderItems(paymentType, orderId){
+    const order = state.orders.find(o =>
+        clean(o._payment) === clean(paymentType) &&
+        clean(o.order_id || o.id) === clean(orderId)
+    );
+    if(!order) return;
+
+    const modal = $("#orderItemsModal");
+    $("#orderItemsTitle").textContent = "Order " + (order.order_id || order.id || "—");
+    $("#orderItemsSubtitle").textContent =
+        (order.delivery_boy_name || "Delivery Partner") +
+        " · " + (order._payment || "") +
+        " · " + (order.delivery_status || "assigned");
+
+    const customer = order.customer_name || order.user_name || order.name || "Customer";
+    $("#orderItemsSummary").innerHTML = [
+        ["Delivery Partner",order.delivery_boy_name || "—"],
+        ["Partner Mobile",order.delivery_boy_mobile || "—"],
+        ["Customer",customer],
+        ["Status",(order.delivery_status || "assigned").replaceAll("_"," ")],
+        ["Distance",Number.isFinite(Number(order.delivery_distance)) ? Number(order.delivery_distance).toFixed(2)+" km" : "—"],
+        ["Earnings",money(orderEarning(order))],
+        ["Payment",order._payment || "—"],
+        ["Delivered",fmtDate(order.delivered_at || order.updated_at || order.created_at)]
+    ].map(([k,v])=>`<div class="detailBox"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("");
+
+    $("#orderItemsBody").innerHTML = `<div class="emptyState">Loading delivered items…</div>`;
+    $("#orderItemsFooter").innerHTML = "";
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden","false");
+
+    let items = getOrderItemsArray(order);
+    items = await enrichOrderItems(order, items);
+
+    if(!items.length){
+        $("#orderItemsBody").innerHTML = `<div class="emptyState">No item details were saved in this order.</div>`;
+        return;
+    }
+
+    let itemsTotal = 0;
+    let totalQty = 0;
+
+    $("#orderItemsBody").innerHTML = items.map(item=>{
+        const qty = itemQty(item);
+        const unitPrice = itemUnitPrice(item);
+        const lineTotal = qty * unitPrice;
+        itemsTotal += lineTotal;
+        totalQty += qty;
+        const img = itemImage(item);
+
+        return `
+            <div class="orderItemRow">
+                <div class="orderItemImage">
+                    ${img
+                        ? `<img src="${esc(img)}" alt="" onerror="this.parentElement.innerHTML='<i class=&quot;fa-solid fa-box&quot;></i>'">`
+                        : `<i class="fa-solid fa-box"></i>`}
+                </div>
+                <div class="orderItemInfo">
+                    <strong>${esc(itemName(item))}</strong>
+                    <span>${esc(itemUnitText(item) || "Item")} · Qty ${qty}</span>
+                </div>
+                <div class="orderItemPrice">
+                    <strong>${money(lineTotal)}</strong>
+                    <span>${money(unitPrice)} × ${qty}</span>
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    const finalTotal = Number(
+        order.total_amount ??
+        order.total_to_pay ??
+        order.grand_total ??
+        order.final_total ??
+        order.total ??
+        order.amount
+    );
+
+    $("#orderItemsFooter").innerHTML = `
+        <div class="orderTotalRow"><span>Total quantity</span><strong>${totalQty}</strong></div>
+        <div class="orderTotalRow"><span>Items total</span><strong>${money(itemsTotal)}</strong></div>
+        <div class="orderTotalRow"><span>Delivery partner earning</span><strong>${money(orderEarning(order))}</strong></div>
+        <div class="orderTotalRow"><span>Final order total</span><strong>${money(Number.isFinite(finalTotal) ? finalTotal : itemsTotal)}</strong></div>
+    `;
+}
+
+function closeOrderItems(){
+    $("#orderItemsModal").classList.remove("open");
+    $("#orderItemsModal").setAttribute("aria-hidden","true");
 }
 
 async function openApplication(id){
@@ -864,6 +1172,7 @@ function bind(){
     $("#refreshBtn").addEventListener("click",()=>loadAll(true));
     $("#menuBtn").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
     $$("[data-close-modal]").forEach(x=>x.addEventListener("click",closeModal));
+    $$("[data-close-order-modal]").forEach(x=>x.addEventListener("click",closeOrderItems));
     $("#applicationSearch").addEventListener("input",renderApplications);
     $("#partnerSearch").addEventListener("input",renderPartners);
     $("#deliverySearch").addEventListener("input",renderDeliveries);
@@ -885,7 +1194,7 @@ function bind(){
     });
 }
 
-window.CEZOO_ADMIN={openApplication,openDocument,updateApplication};
+window.CEZOO_ADMIN={openApplication,openDocument,updateApplication,openOrderItems,closeOrderItems};
 
 document.addEventListener("DOMContentLoaded",async()=>{
     bind();

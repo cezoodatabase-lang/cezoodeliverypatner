@@ -397,18 +397,10 @@ if(documentMobile){
     );
 }
 function showSelectedFile(input){
-
-    const fileNameBox =
-        input
-            .closest(".custom-file-upload")
-            .querySelector(".selected-file-name");
-
-    if(input.files && input.files.length > 0){
-        fileNameBox.textContent = input.files[0].name;
-    }else{
-        fileNameBox.textContent = "No file selected";
-    }
+    // Photo is captured/selected. No preview or file-name text is shown.
+    return !!(input && input.files && input.files.length > 0);
 }
+
 
 window.cleanFileName = cleanFileName;
 window.hasSelectedFile = hasSelectedFile;
